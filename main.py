@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import pyautogui
+import time
 
 # Mediapipe 초기화
 mp_hands = mp.solutions.hands
@@ -12,6 +13,13 @@ cap = cv2.VideoCapture(0)
 
 # 화면 크기 가져오기
 screen_width, screen_height = pyautogui.size()
+
+# 이전 커서 위치 초기화
+prev_cursor_x, prev_cursor_y = screen_width // 2, screen_height // 2
+
+# 디바운싱을 위한 변수 초기화
+debounce_time = 0.1  # 100ms
+last_move_time = time.time()
 
 def detect_gesture(hand_landmarks):
     # 엄지와 검지의 거리 계산
@@ -50,8 +58,16 @@ while cap.isOpened():
             cursor_x = int(wrist.x * screen_width)
             cursor_y = int(wrist.y * screen_height)
             
-            # 마우스 커서 이동
-            pyautogui.moveTo(cursor_x, cursor_y)
+            # 디바운싱: 일정 시간 간격으로만 커서 이동
+            current_time = time.time()
+            if current_time - last_move_time > debounce_time:
+                move_x = cursor_x - prev_cursor_x
+                move_y = cursor_y - prev_cursor_y
+                pyautogui.move(move_x, move_y)
+                
+                # 이전 커서 위치 업데이트
+                prev_cursor_x, prev_cursor_y = cursor_x, cursor_y
+                last_move_time = current_time
             
             # 제스처 인식
             gesture = detect_gesture(hand_landmarks)
