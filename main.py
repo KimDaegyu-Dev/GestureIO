@@ -32,16 +32,14 @@ while cap.isOpened():
     if not ret:
         break
 
+    # 프레임을 좌우 반전
+    frame = cv2.flip(frame, 1)
+
     # BGR 이미지를 RGB로 변환
-    image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    image.flags.writeable = False
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-    # Mediapipe로 손 키포인트 추출
-    results = hands.process(image)
-
-    # BGR로 다시 변환
-    image.flags.writeable = True
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    # Mediapipe로 손 추정
+    results = hands.process(frame_rgb)
 
     # 손 키포인트 그리기 및 커서 제어
     if results.multi_hand_landmarks:
@@ -53,17 +51,17 @@ while cap.isOpened():
                 keypoints.append((x, y))
             window.setKeypoints(keypoints)
             
-            # 손목 좌표 가져오기
-            wrist = hand_landmarks.landmark[mp_hands.HandLandmark.WRIST]
-            cursor_controller.move_cursor(wrist)
+            # 검지 손가락 끝 좌표 가져오기
+            index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+            cursor_controller.move_cursor(index_finger_tip)
             
             # 제스처 인식
             gesture = gesture_detector.detect_gesture(hand_landmarks)
             if gesture == "click":
                 QTimer.singleShot(0, cursor_controller.click)
 
-    # 화면에 출력
-    cv2.imshow('Hand Tracking', image)
+    # 프레임을 표시
+    cv2.imshow('Webcam', frame)
 
     if cv2.waitKey(10) & 0xFF == ord('q'):
         break
