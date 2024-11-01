@@ -65,6 +65,8 @@ class FingerStatus:
             return 'three'
         elif fingers_status == [0, 1, 1, 1, 1]:
             return 'four'
+        elif fingers_status == [1, 0, 1, 1, 1]:
+            return 'okay'
         else:
             return 'unknown'
             

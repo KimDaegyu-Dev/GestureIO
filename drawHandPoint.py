@@ -65,7 +65,7 @@ def main():
     finger_status = FingerStatus()
     manage_process = ManageProcess()
     mp_hands = mp.solutions.hands
-    hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.5, min_tracking_confidence=0.9)
+    hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.5, min_tracking_confidence=0.8)
 
     cap = cv2.VideoCapture(0)
 
@@ -95,7 +95,7 @@ def main():
                     hand_action.watchGesture(hand_landmarks.landmark, finger_status.recognize_gesture(rightstatus), isLeft=False)
                     # print("right: ", finger_status.recognize_gesture(rightstatus))
             window.setKeypoints(left_hand_keypoints, right_hand_keypoints, mp_hands.HAND_CONNECTIONS)
-        manage_process.ensure_python_is_frontmost()
+        # manage_process.ensure_python_is_frontmost()
 
     timer = QTimer()
     timer.timeout.connect(update_landmarks)
