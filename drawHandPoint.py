@@ -3,7 +3,9 @@ from PyQt5.QtGui import QPainter, QPen, QColor
 from PyQt5.QtWidgets import QApplication, QMainWindow
 import mediapipe as mp
 import cv2
-
+from SimpleFingerClassfication import FingerStatus
+from handAction import HandAction
+import pyautogui
 class TransparentWindow(QMainWindow):
     def __init__(self, x: int, y: int, width: int, height: int, pen_color: str, pen_size: int):
         super().__init__()
@@ -56,11 +58,12 @@ class TransparentWindow(QMainWindow):
 
 def main():
     app = QApplication([])
-    screen_width, screen_height = 1920, 1080  # 화면 크기 설정
+    screen_width, screen_height = pyautogui.size()  # 화면 크기 설정
     window = TransparentWindow(0, 0, screen_width, screen_height, 'white', 2)
-
+    hand_action = HandAction()
+    finger_status = FingerStatus()
     mp_hands = mp.solutions.hands
-    hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.5, min_tracking_confidence=0.8)
+    hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.5, min_tracking_confidence=0.9)
 
     cap = cv2.VideoCapture(0)
 
@@ -80,9 +83,16 @@ def main():
             for hand_landmarks, handedness in zip(results.multi_hand_landmarks, results.multi_handedness):
                 if handedness.classification[0].label == 'Left':
                     left_hand_keypoints = hand_landmarks.landmark
+                    left_index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+                    left_thumb_tip = hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP]
+                    leftstatus = finger_status.get_left_finger_status(hand_landmarks)
+                    hand_action.print_finger_position(left_index_finger_tip)
+                    hand_action.click(left_index_finger_tip, finger_status.recognize_gesture(leftstatus))
+                    # print("left: ", )
                 elif handedness.classification[0].label == 'Right':
                     right_hand_keypoints = hand_landmarks.landmark
-
+                    rightstatus = finger_status.get_right_finger_status(hand_landmarks)
+                    # print("right: ", finger_status.recognize_gesture(rightstatus))
             window.setKeypoints(left_hand_keypoints, right_hand_keypoints, mp_hands.HAND_CONNECTIONS)
 
     timer = QTimer()
