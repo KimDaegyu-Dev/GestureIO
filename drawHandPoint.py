@@ -5,6 +5,7 @@ import mediapipe as mp
 import cv2
 from SimpleFingerClassfication import FingerStatus
 from handAction import HandAction
+from ManageProcess import ManageProcess
 import pyautogui
 class TransparentWindow(QMainWindow):
     def __init__(self, x: int, y: int, width: int, height: int, pen_color: str, pen_size: int):
@@ -59,9 +60,10 @@ class TransparentWindow(QMainWindow):
 def main():
     app = QApplication([])
     screen_width, screen_height = pyautogui.size()  # 화면 크기 설정
-    window = TransparentWindow(0, 0, screen_width, screen_height, 'white', 2)
+    window = TransparentWindow(0, 0, screen_width, screen_height, 'green', 2)
     hand_action = HandAction()
     finger_status = FingerStatus()
+    manage_process = ManageProcess()
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.5, min_tracking_confidence=0.9)
 
@@ -78,22 +80,22 @@ def main():
 
         left_hand_keypoints = []
         right_hand_keypoints = []
-
         if results.multi_hand_landmarks and results.multi_handedness:
             for hand_landmarks, handedness in zip(results.multi_hand_landmarks, results.multi_handedness):
                 if handedness.classification[0].label == 'Left':
                     left_hand_keypoints = hand_landmarks.landmark
-                    left_index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
-                    left_thumb_tip = hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP]
                     leftstatus = finger_status.get_left_finger_status(hand_landmarks)
-                    hand_action.print_finger_position(left_index_finger_tip)
-                    hand_action.click(left_index_finger_tip, finger_status.recognize_gesture(leftstatus))
-                    # print("left: ", )
+                    # hand_action.print_finger_position(left_index_finger_tip)
+                    hand_action.watchGesture(hand_landmarks.landmark, finger_status.recognize_gesture(leftstatus))
+
+                    # print(process.get_process())
                 elif handedness.classification[0].label == 'Right':
                     right_hand_keypoints = hand_landmarks.landmark
                     rightstatus = finger_status.get_right_finger_status(hand_landmarks)
+                    hand_action.watchGesture(hand_landmarks.landmark, finger_status.recognize_gesture(rightstatus), isLeft=False)
                     # print("right: ", finger_status.recognize_gesture(rightstatus))
             window.setKeypoints(left_hand_keypoints, right_hand_keypoints, mp_hands.HAND_CONNECTIONS)
+        manage_process.ensure_python_is_frontmost()
 
     timer = QTimer()
     timer.timeout.connect(update_landmarks)
