@@ -20,7 +20,7 @@ class ManageProcess:
             layer = window.get('kCGWindowLayer', 'Unknown')
             z_index = window.get('kCGWindowNumber', 'Unknown')
             window_order.append((app_name, pid))
-            print(f"Application: {app_name}, PID: {pid}, Layer: {layer}, Z-Index: {z_index}")
+            # print(f"Application: {app_name}, PID: {pid}, Layer: {layer}, Z-Index: {z_index}")
         return window_order
 
 
@@ -38,7 +38,7 @@ class ManageProcess:
         frontmost_app = AppKit.NSWorkspace.sharedWorkspace().frontmostApplication()
         # print(frontmost_app)
         if(frontmost_app.processIdentifier() == self.get_python_processes()[0]):
-            return(self.get_second_frontmost_app_pid())
+            return(self.get_next_frontmost_app_pid('Python'))
         return frontmost_app.processIdentifier()
     def get_python_processes(self):
         python_processes = []
@@ -54,6 +54,9 @@ class ManageProcess:
             app.activateWithOptions_(AppKit.NSApplicationActivateIgnoringOtherApps)
             return True
         return False
+    def bring_window_to_second(self, pid):
+        self.bring_window_to_front(pid)
+    
     def ensure_python_is_frontmost(self):
         self.bring_window_to_front(self.python_pids[0])
         # frontmost_pid = self.get_frontmost_app_pid()
@@ -78,12 +81,54 @@ class ManageProcess:
         else:
             print("No Python processes found.") 
 
-    def get_second_frontmost_app_pid(self):
+    def get_next_frontmost_app_pid(self, name):
         window_order = self.get_layer_order()
         for i, (app_name, pid) in enumerate(window_order):
-            if app_name == 'Python':
+            if app_name == name:
                 if i + 1 < len(window_order):
                     return window_order[i + 1][1]  # 다음 인덱스의 PID 반환
                 else:
                     return None  # 다음 인덱스가 없으면 None 반환
         return None
+    def get_window_at_position(self, x, y):
+        options = Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements
+        window_list = Quartz.CGWindowListCopyWindowInfo(options, Quartz.kCGNullWindowID)
+        window_bounds_list = []
+        for window in window_list:
+            app_name = window.get('kCGWindowOwnerName', 'Unknown')
+            if app_name in ['Window Server', '스크린샷', 'screencapture']:
+                continue
+            window_bounds = window.get('kCGWindowBounds')
+            if window_bounds['X'] <= x <= window_bounds['X'] + window_bounds['Width'] and \
+               window_bounds['Y'] <= y <= window_bounds['Y'] + window_bounds['Height']:
+                pid = window.get('kCGWindowOwnerPID', 'Unknown')
+                window_bounds_list.append((app_name, pid))
+        return window_bounds_list
+    
+    def get_topmost_window_at_position(self, x, y):
+        windows_at_position = self.get_window_at_position(x, y)
+        window_order = self.get_layer_order()
+        for app_name, pid in window_order:
+            if (app_name, pid) in windows_at_position:
+                if(app_name == 'Python'):
+                    continue
+                return app_name, pid
+        return None
+
+# 예제 사용법
+if __name__ == "__main__":
+    manage_process = ManageProcess()
+    frontmost_pid = manage_process.get_frontmost_app_pid()
+    # second_frontmost_pid = manage_process.get_next_frontmost_app_pid()
+    print(f"Frontmost PID: {frontmost_pid}")
+    # print(f"Second Frontmost PID: {second_frontmost_pid}")
+
+    # 임의의 X, Y 위치에 있는 창 정보 가져오기
+    x, y = 100, 100  # 예제 좌표
+    window_bounds_list = manage_process.get_window_at_position(x, y)
+    top = manage_process.get_topmost_window_at_position(x,y)
+    # print(top)
+    if window_bounds_list:
+        print(f"Window at position ({x}, {y}): Application: {window_bounds_list[0]}, PID: {window_bounds_list[1]}")
+    else:
+        print(f"No window found at position ({x}, {y})")

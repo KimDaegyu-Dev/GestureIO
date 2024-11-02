@@ -95,7 +95,7 @@ def main():
                     hand_action.watchGesture(hand_landmarks.landmark, finger_status.recognize_gesture(rightstatus), isLeft=False)
                     # print("right: ", finger_status.recognize_gesture(rightstatus))
             window.setKeypoints(left_hand_keypoints, right_hand_keypoints, mp_hands.HAND_CONNECTIONS)
-        # manage_process.ensure_python_is_frontmost()
+        manage_process.ensure_python_is_frontmost()
 
     timer = QTimer()
     timer.timeout.connect(update_landmarks)

@@ -4,14 +4,14 @@ from ManageProcess import ManageProcess
 import Quartz
 import AppKit
 class HandAction:
-    def get_frontmost_application_window(self):
+    def get_application_window_info(self, pid):
         options = Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements
         window_list = Quartz.CGWindowListCopyWindowInfo(options, Quartz.kCGNullWindowID)
         # print(window_list)
-        frontmost_app_pid = AppKit.NSWorkspace.sharedWorkspace().frontmostApplication().processIdentifier()
+        # frontmost_app_pid = AppKit.NSWorkspace.sharedWorkspace().frontmostApplication().processIdentifier()
         
         for window in window_list:
-            if window.get('kCGWindowLayer') == 0 and window.get('kCGWindowOwnerPID') == frontmost_app_pid:
+            if window.get('kCGWindowLayer') == 0 and window.get('kCGWindowOwnerPID') == pid:
                 window_bound=window.get('kCGWindowBounds')
                 window_name=window.get('kCGWindowOwnerName')
                 return [window_name, window_bound['X'], window_bound['Y'], window_bound['Height'], window_bound['Width']] 
@@ -29,9 +29,10 @@ class HandAction:
         self.mange_process = ManageProcess()
         self.prev_mid_x = None
         self.prev_mid_y = None
-        self.current_position = self.get_frontmost_application_window()[1:3]
-        self.current_size = self.get_frontmost_application_window()[3:5]
-        self.current_name = self.get_frontmost_application_window()[0]
+        self.current_position = 0
+        self.current_size = 0
+        self.current_name = 0
+        self.prev_process_pid = 0
     def calculate_distance(self, point1, point2):
         return ((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2) ** 0.5
     def print_finger_position(self, index_finger_tip):
@@ -70,18 +71,34 @@ class HandAction:
         screen_width, screen_height = pyautogui.size()
         new_x = int(mid_x * screen_width)
         new_y = int(mid_y * screen_height)
+        topmost_window_info = self.mange_process.get_topmost_window_at_position(new_x, new_y)
+        if topmost_window_info:
+            # 창을 제일 앞에 오도록 설정
+            # self.mange_process.bring_window_to_second(topmost_window_info[1])
+            # self.mange_process.bring_window_to_front(self.mange_process.get_python_processes()[0])
+            frontmost_app = self.get_app_by_pid(topmost_window_info[1])
+            if topmost_window_info[1] != self.prev_process_pid:
+                self.prev_mid_x, self.prev_mid_y = None, None
+                self.current_position = self.get_application_window_info(topmost_window_info[1])[1:3]
+                # print("Change Process")
+            if self.prev_mid_x is not None and self.prev_mid_y is not None:
+                move_x = new_x - self.prev_mid_x
+                move_y = new_y - self.prev_mid_y
+                if abs(move_x)>100 or abs(move_y)>100:
+                    move_x=0
+                    move_y=0
+                frontmost_window = frontmost_app.windows()[0]
+                if frontmost_window :
+                    # margin_x, margin_y = new_x- self.current_position[0], new_x-self.current_position[1]
+                    # print(margin_x,margin_y)
+                    # print("before change: ", self.current_position, move_x, move_y)
+                    frontmost_window.position = [self.current_position[0] + move_x, self.current_position[1] + move_y]
+                    self.current_position = [self.current_position[0] + move_x, self.current_position[1] + move_y]
+                    # print("after change:", self.current_position, move_x, move_y)
 
-        if self.prev_mid_x is not None and self.prev_mid_y is not None:
-            move_x = new_x - self.prev_mid_x
-            move_y = new_y - self.prev_mid_y
-
-            frontmost_app = self.get_app_by_pid(self.mange_process.get_frontmost_app_pid())
-            frontmost_window = frontmost_app.windows()[0]
-            if frontmost_window:
-                frontmost_window.position = [self.current_position[0] + move_x, self.current_position[1] + move_y]
-                self.current_position = [self.current_position[0] + move_x, self.current_position[1] + move_y]
-
+        self.prev_process_pid = topmost_window_info[1]
         self.prev_mid_x, self.prev_mid_y = new_x, new_y
+    
     def watchGesture(self, hand_landmark, current_gesture, isLeft=True):
         """
         제스처가 standby에서 point로 바뀌면 index_finger_tip의 위치에 마우스 클릭을 수행하는 메소드
