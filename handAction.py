@@ -80,6 +80,7 @@ class HandAction:
             if topmost_window_info[1] != self.prev_process_pid:
                 self.prev_mid_x, self.prev_mid_y = None, None
                 self.current_position = self.get_application_window_info(topmost_window_info[1])[1:3]
+                print(self.current_position)
                 # print("Change Process")
             if self.prev_mid_x is not None and self.prev_mid_y is not None:
                 move_x = new_x - self.prev_mid_x
