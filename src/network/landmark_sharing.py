@@ -50,7 +50,7 @@ class LandmarkSharing(QWidget):
         if not ret:
             return
 
-        result = self.hand_tracker.process_frame(frame)
+        result = self.hand_tracker.process_frame(frame, landmark_sharing=True)
         if result:
             left_hand, right_hand, connections = result
             # 랜드마크를 딕셔너리 형태로 변환
@@ -120,5 +120,45 @@ class LandmarkSharing(QWidget):
             self.sio.emit('landmarks', {'targetUser': self.selected_user, 'landmarks': landmarks})
 
     def check_winner(self, opponent_landmarks):
-        # Implement winner checking logic here
-        pass
+        if not self.landmarks or not opponent_landmarks:
+            return
+
+        own_gesture = self.recognize_gesture(self.landmarks)
+        opponent_gesture = self.recognize_gesture(opponent_landmarks)
+
+        if own_gesture and opponent_gesture:
+            if own_gesture == opponent_gesture:
+                self.landmark_visualizer.set_winner(None)
+            elif (
+                (own_gesture == 'rock' and opponent_gesture == 'scissors') or
+                (own_gesture == 'paper' and opponent_gesture == 'rock') or
+                (own_gesture == 'scissors' and opponent_gesture == 'paper')
+            ):
+                self.landmark_visualizer.set_winner('self')
+            else:
+                self.landmark_visualizer.set_winner('opponent')
+
+    def recognize_gesture(self, landmarks):
+        # Implement rock-paper-scissors gesture recognition
+        # This is a simplified version and may need refinement
+        thumb_tip = landmarks[4]
+        index_tip = landmarks[8]
+        middle_tip = landmarks[12]
+        ring_tip = landmarks[16]
+        pinky_tip = landmarks[20]
+
+        if (thumb_tip['y'] < index_tip['y'] and
+            index_tip['y'] < middle_tip['y'] and
+            middle_tip['y'] < ring_tip['y'] and
+            ring_tip['y'] < pinky_tip['y']):
+            return 'rock'
+        elif (thumb_tip['y'] > index_tip['y'] and
+              thumb_tip['y'] > middle_tip['y'] and
+              thumb_tip['y'] > ring_tip['y'] and
+              thumb_tip['y'] > pinky_tip['y']):
+            return 'paper'
+        elif (index_tip['y'] < ring_tip['y'] and
+              middle_tip['y'] < ring_tip['y'] and
+              pinky_tip['y'] > ring_tip['y']):
+            return 'scissors'
+        return None
