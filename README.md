@@ -2,104 +2,176 @@
 
 ## Overview
 
-GestureIO is an open-source project designed to enable gesture-based interactions using hand tracking and recognition. The project leverages computer vision and machine learning techniques to detect and interpret hand gestures, allowing users to control applications and perform various actions through intuitive hand movements.
+GestureIO is an innovative open-source project that enables intuitive computer control through hand gestures. By utilizing computer vision technology, it allows users to interact with their computer using natural hand movements, making human-computer interaction more accessible and intuitive.
 
 ## Features
 
-- Real-time hand tracking using MediaPipe
-- Gesture recognition for various hand poses
-- Integration with PyQt5 for GUI applications
-- Control of system processes and windows
-- Customizable gesture actions
+### Mouse Control
+
+- Move cursor using index finger
+- Left click with point gesture followed by four fingers
+- Right click with three fingers followed by fist gesture
+- Drag and drop using two fingers
+- Scroll up/down using two/three fingers
+
+### Window Management
+
+- Move windows by pinching gesture (okay sign)
+- Automatic window focus management
+- Multi-window support
+
+### Gesture Recognition
+
+- Real-time hand tracking
+- Support for both left and right hands
+- Multiple gesture patterns:
+  - Point (index finger)
+  - Fist
+  - Open hand
+  - Two fingers
+  - Three fingers
+  - Four fingers
+  - Okay sign
 
 ## Installation
 
-To get started with GestureIO, follow these steps:
-
 1. Clone the repository:
 
-   ```sh
+   ```bash
    git clone https://github.com/yourusername/GestureIO.git
    cd GestureIO
    ```
 
-2. Install the required dependencies:
+2. Install required dependencies:
 
-   ```sh
+   ```bash
    pip install -r requirements.txt
    ```
 
 3. Run the application:
-   ```sh
+
+   ```bash
    python main.py
    ```
 
-## Usage
+## Technologies Used
 
-GestureIO can be used to control various applications and system functions through hand gestures. The main script `main.py` initializes the hand tracking and gesture recognition system, and the recognized gestures can be mapped to different actions.
+### Core Technologies
+
+- **MediaPipe**: Hand tracking and landmark detection
+- **OpenCV**: Real-time video processing
+- **PyQt5**: GUI framework for transparent overlay
+- **PyAutoGUI**: System-level mouse and keyboard control
+
+### System Integration
+
+- **Quartz**: macOS window management
+- **AppKit**: macOS application control
+- **PyXA**: macOS application scripting
+
+### Development Tools
+
+- **Python 3.8+**: Main development language
+- **Git**: Version control
+- **pip**: Package management
 
 ## Contributing
 
-We welcome contributions from the community! If you would like to contribute to GestureIO, please follow these steps:
+We welcome contributions from the community! If you'd like to contribute to GestureIO, please follow these steps:
 
-1. Fork the repository.
-2. Create a new branch for your feature or bugfix.
-3. Commit your changes and push the branch to your fork.
-4. Open a pull request with a detailed description of your changes.
+1. Fork the repository
+2. Create a new branch for your feature or bugfix
+3. Commit your changes and push the branch to your fork
+4. Create a pull request with a detailed description of your changes
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
-- [MediaPipe](https://mediapipe.dev/) for hand tracking
+- [MediaPipe](https://mediapipe.dev/) for hand tracking technology
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro) for GUI components
-- [PyAutoGUI](https://pyautogui.readthedocs.io/en/latest/) for controlling the mouse and keyboard
+- [PyAutoGUI](https://pyautogui.readthedocs.io/en/latest/) for mouse and keyboard control
 
-## Contact
+---
 
-For any questions or inquiries, please contact [yourname@example.com](mailto:yourname@example.com).
-
-Join us in making gesture-based interactions more accessible and intuitive!
+# GestureIO (한국어)
 
 ## 개요
 
-**GestureIO**는 손 추적 및 인식을 활용한 제스처 기반 인터랙션을 가능하게 하는 오픈소스 프로젝트입니다. 이 프로젝트는 컴퓨터 비전과 머신러닝 기술을 사용하여 손 제스처를 감지하고 해석하며, 이를 통해 사용자가 직관적인 손 동작으로 애플리케이션을 제어하거나 다양한 작업을 수행할 수 있도록 합니다.
+GestureIO는 손동작을 통해 직관적인 컴퓨터 제어를 가능하게 하는 혁신적인 오픈소스 프로젝트입니다. 컴퓨터 비전 기술을 활용하여 사용자가 자연스러운 손동작으로 컴퓨터와 상호작용할 수 있게 하여, 인간-컴퓨터 상호작용을 더욱 접근성 있고 직관적으로 만듭니다.
 
-## 주요 기능
+## 기능
 
-- MediaPipe를 활용한 실시간 손 추적
-- 다양한 손 동작에 대한 제스처 인식
-- PyQt5를 사용한 GUI 애플리케이션 통합
-- 시스템 프로세스 및 창 제어 기능
-- 사용자 정의 가능한 제스처 액션
+### 마우스 제어
+
+- 검지 손가락으로 커서 이동
+- 포인트 제스처 후 네 손가락으로 왼쪽 클릭
+- 세 손가락 후 주먹 제스처로 오른쪽 클릭
+- 두 손가락으로 드래그 앤 드롭
+- 두/세 손가락으로 위/아래 스크롤
+
+### 창 관리
+
+- 핀치 제스처(오케이 사인)로 창 이동
+- 자동 창 포커스 관리
+- 다중 창 지원
+
+### 제스처 인식
+
+- 실시간 손 추적
+- 왼손과 오른손 모두 지원
+- 다양한 제스처 패턴:
+  - 포인트 (검지 손가락)
+  - 주먹
+  - 펼친 손
+  - 두 손가락
+  - 세 손가락
+  - 네 손가락
+  - 오케이 사인
 
 ## 설치 방법
 
-GestureIO를 시작하려면 다음 단계를 따르세요:
-
 1. 레포지토리 클론:
 
-   ```sh
+   ```bash
    git clone https://github.com/yourusername/GestureIO.git
    cd GestureIO
    ```
 
-2. 필요한 의존성 설치:
+2. 필요한 패키지 설치:
 
-   ```sh
+   ```bash
    pip install -r requirements.txt
    ```
 
 3. 애플리케이션 실행:
-   ```sh
+
+   ```bash
    python main.py
    ```
 
-## 사용법
+## 사용된 기술
 
-GestureIO는 손 제스처를 통해 다양한 애플리케이션과 시스템 기능을 제어할 수 있습니다. `main.py` 스크립트를 실행하면 손 추적 및 제스처 인식 시스템이 초기화되며, 인식된 제스처는 다양한 작업에 매핑할 수 있습니다.
+### 핵심 기술
+
+- **MediaPipe**: 손 추적 및 랜드마크 감지
+- **OpenCV**: 실시간 비디오 처리
+- **PyQt5**: 투명 오버레이를 위한 GUI 프레임워크
+- **PyAutoGUI**: 시스템 레벨 마우스 및 키보드 제어
+
+### 시스템 통합
+
+- **Quartz**: macOS 창 관리
+- **AppKit**: macOS 애플리케이션 제어
+- **PyXA**: macOS 애플리케이션 스크립팅
+
+### 개발 도구
+
+- **Python 3.8+**: 주 개발 언어
+- **Git**: 버전 관리
+- **pip**: 패키지 관리
 
 ## 기여 방법
 
@@ -119,9 +191,3 @@ GestureIO는 커뮤니티의 기여를 환영합니다! 기여하고 싶으신 �
 - [MediaPipe](https://mediapipe.dev/)를 제공해준 손 추적 기술
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro)를 통한 GUI 구성 요소
 - [PyAutoGUI](https://pyautogui.readthedocs.io/en/latest/)를 통한 마우스 및 키보드 제어
-
-## 문의
-
-질문이나 문의 사항이 있으시면 [yourname@example.com](mailto:yourname@example.com)으로 연락주세요.
-
-직관적이고 접근성 높은 제스처 기반 인터랙션을 함께 만들어갑시다!
