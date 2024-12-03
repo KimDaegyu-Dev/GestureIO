@@ -35,7 +35,7 @@ class HandAction:
         self.manage_process = ManageProcess()
         self.prev_mid_x = None
         self.prev_mid_y = None
-        self.current_position = [0, 0]
+        self.current_position = np.array([0, 0])  # numpy array로 변경
         self.prev_process_pid = 0
 
     def get_application_window_info(self, pid):
@@ -85,21 +85,19 @@ class HandAction:
     def update_window_position(self, index_finger_tip, thumb_tip):
         """창의 위치를 업데이트합니다."""
         mid_x, mid_y = self.calculate_midpoint(index_finger_tip, thumb_tip)
-        new_x = int(mid_x * self.screen_width)
-        new_y = int(mid_y * self.screen_height)
+        new_position = np.array([int(mid_x * self.screen_width), int(mid_y * self.screen_height)])
         
-        window_info = self.manage_process.get_topmost_window_at_position(new_x, new_y)
+        window_info = self.manage_process.get_topmost_window_at_position(new_position[0], new_position[1])
         if not window_info:
             return
 
-        app_name, pid = window_info
+        (app_name, pid) = window_info
         if pid != self.prev_process_pid:
             self._handle_new_window(pid)
-            return
 
-        self._update_window_position(new_x, new_y, pid)
+        self._update_window_position(new_position, pid)
         self.prev_process_pid = pid
-        self.prev_mid_x, self.prev_mid_y = new_x, new_y
+        self.prev_mid_x, self.prev_mid_y = new_position
 
     def _handle_new_window(self, pid):
         """새로운 창을 처리합니다."""
@@ -108,25 +106,21 @@ class HandAction:
         if window_info:
             self.current_position = [window_info.x, window_info.y]
 
-    def _update_window_position(self, new_x, new_y, pid):
+    def _update_window_position(self, new_position, pid):
         """창의 새로운 위치를 적용합니다."""
         if self.prev_mid_x is None or self.prev_mid_y is None:
             return
 
-        move_x = new_x - self.prev_mid_x
-        move_y = new_y - self.prev_mid_y
+        move_vector = new_position - np.array([self.prev_mid_x, self.prev_mid_y])
 
-        if abs(move_x) > self.MOVEMENT_THRESHOLD or abs(move_y) > self.MOVEMENT_THRESHOLD:
+        if np.any(np.abs(move_vector) > self.MOVEMENT_THRESHOLD):
             return
 
         app = self.get_app_by_pid(pid)
         if app and app.windows():
-            new_position = [
-                self.current_position[0] + move_x,
-                self.current_position[1] + move_y
-            ]
-            print(f"Moving window to {new_position}")
-            app.windows()[0].position = new_position
+            new_position = self.current_position + move_vector
+
+            app.windows()[0].position = new_position.tolist()
             self.current_position = new_position
 
     def process_mouse_movement(self, index_finger_tip):
@@ -162,7 +156,7 @@ class HandAction:
         elif self.previous_gesture == 'point' and current_gesture == 'point':
             self.process_mouse_movement(index_finger_tip)
 
-        elif self.previous_gesture == 'point' and current_gesture == 'four':
+        elif self.previous_gesture == 'point' and current_gesture == 'standby':
             pyautogui.click(self.cursor_x, self.cursor_y)
 
         if isLeft:
