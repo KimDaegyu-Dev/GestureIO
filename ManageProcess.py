@@ -1,116 +1,186 @@
 import Quartz
 import AppKit
-from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionOnScreenOnly, kCGWindowListExcludeDesktopElements, kCGNullWindowID
+from Quartz import (
+    CGWindowListCopyWindowInfo,
+    kCGWindowListOptionOnScreenOnly,
+    kCGWindowListExcludeDesktopElements,
+    kCGNullWindowID
+)
+
+class WindowManager:
+    """윈도우 관리를 위한 상수 정의"""
+    IGNORED_APPS = {'Window Server', '스크린샷', 'screencapture'}
+    WINDOW_LIST_OPTIONS = kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements
 
 class ManageProcess:
+    """프로세스 및 윈도우 관리 클래스"""
+    
     def __init__(self):
+        """Python 프로세스 ID 초기화"""
         self.python_pids = self.get_python_processes()
 
     def get_layer_order(self):
-        # On-screen 옵션과 Desktop 요소 제외 옵션을 함께 사용
+        """
+        화면에 표시된 윈도우의 레이어 순서를 가져옵니다.
+
+        Returns:
+            [(앱 이름, PID)] 튜플의 리스트
+        """
         window_list = CGWindowListCopyWindowInfo(
-            kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements, 
+            WindowManager.WINDOW_LIST_OPTIONS,
             kCGNullWindowID
         )
-        window_order = []
-        # 윈도우 순서대로 애플리케이션 이름과 PID 출력
-        for window in window_list:
-            app_name = window.get('kCGWindowOwnerName', 'Unknown')
-            pid = window.get('kCGWindowOwnerPID', 'Unknown')
-            layer = window.get('kCGWindowLayer', 'Unknown')
-            z_index = window.get('kCGWindowNumber', 'Unknown')
-            window_order.append((app_name, pid))
-            # print(f"Application: {app_name}, PID: {pid}, Layer: {layer}, Z-Index: {z_index}")
-        return window_order
-
+        return [
+            (window.get('kCGWindowOwnerName', 'Unknown'),
+             window.get('kCGWindowOwnerPID', 'Unknown'))
+            for window in window_list
+        ]
 
     def get_frontmost_application_window(self):
-        options = Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements
-        window_list = Quartz.CGWindowListCopyWindowInfo(options, Quartz.kCGNullWindowID)
-        frontmost_app_pid = AppKit.NSWorkspace.sharedWorkspace().frontmostApplication().processIdentifier()
+        """
+        가장 앞에 있는 애플리케이션 창의 정보를 가져옵니다.
+
+        Returns:
+            [PID, X, Y, Height, Width] 또는 None
+        """
+        window_list = CGWindowListCopyWindowInfo(
+            WindowManager.WINDOW_LIST_OPTIONS,
+            kCGNullWindowID
+        )
+        frontmost_app_pid = (
+            AppKit.NSWorkspace.sharedWorkspace()
+            .frontmostApplication()
+            .processIdentifier()
+        )
+
         for window in window_list:
-            if window.get('kCGWindowLayer') == 0 and window.get('kCGWindowOwnerPID') == frontmost_app_pid:
-                window_bound = window.get('kCGWindowBounds')
-                window_PID = window.get('kCGWindowOwnerPID')
-                return [window_PID, window_bound['X'], window_bound['Y'], window_bound['Height'], window_bound['Width']]
+            if (window.get('kCGWindowLayer') == 0 and
+                window.get('kCGWindowOwnerPID') == frontmost_app_pid):
+                bounds = window.get('kCGWindowBounds')
+                return [
+                    window.get('kCGWindowOwnerPID'),
+                    bounds['X'],
+                    bounds['Y'],
+                    bounds['Height'],
+                    bounds['Width']
+                ]
         return None
+
     def get_frontmost_app_pid(self):
-        frontmost_app = AppKit.NSWorkspace.sharedWorkspace().frontmostApplication()
-        # print(frontmost_app)
-        if(frontmost_app.processIdentifier() == self.get_python_processes()[0]):
-            return(self.get_next_frontmost_app_pid('Python'))
+        """
+        가장 앞에 있는 애플리케이션의 PID를 가져옵니다.
+
+        Returns:
+            프로세스 ID
+        """
+        frontmost_app = (
+            AppKit.NSWorkspace.sharedWorkspace()
+            .frontmostApplication()
+        )
+        if frontmost_app.processIdentifier() == self.python_pids[0]:
+            return self.get_next_frontmost_app_pid('Python')
         return frontmost_app.processIdentifier()
+
     def get_python_processes(self):
-        python_processes = []
-        running_apps = AppKit.NSWorkspace.sharedWorkspace().runningApplications()
-        for app in running_apps:
-            if 'Python' in app.localizedName():
-                python_processes.append(app.processIdentifier())
-        return python_processes
+        """
+        실행 중인 Python 프로세스의 PID 목록을 가져옵니다.
+
+        Returns:
+            Python 프로세스 ID 리스트
+        """
+        running_apps = (
+            AppKit.NSWorkspace.sharedWorkspace()
+            .runningApplications()
+        )
+        return [
+            app.processIdentifier()
+            for app in running_apps
+            if 'Python' in app.localizedName()
+        ]
 
     def bring_window_to_front(self, pid):
+        """
+        특정 PID의 윈도우를 앞으로 가져옵니다.
+
+        Args:
+            pid: 프로세스 ID
+
+        Returns:
+            성공 여부
+        """
         app = AppKit.NSRunningApplication.runningApplicationWithProcessIdentifier_(pid)
         if app:
             app.activateWithOptions_(AppKit.NSApplicationActivateIgnoringOtherApps)
             return True
         return False
-    def bring_window_to_second(self, pid):
-        self.bring_window_to_front(pid)
-    
+
     def ensure_python_is_frontmost(self):
+        """Python 윈도우가 항상 최상위에 있도록 합니다."""
         self.bring_window_to_front(self.python_pids[0])
-        # frontmost_pid = self.get_frontmost_app_pid()
-        # if frontmost_pid in self.python_pids:
-        #     print("Python process is already frontmost.")
-        #     return True
-        # else:
-        #     # print("Python process is not frontmost. Bringing to front...")
-        #     return self.bring_window_to_front(self.python_pids[0])
-    def bring_python_to_front(self):
-        python_pids = self.get_python_processes()
-        if python_pids:
-            # print(f"Python processes found with PIDs: {python_pids}")
-            for pid in python_pids:
-                success = self.bring_window_to_front(pid)
-                if success:
-                    # print(f"Successfully brought window with PID {pid} to front.")
-                    pass
-                else:
-                    # print(f"Failed to bring window with PID {pid} to front.")
-                    pass
-        else:
-            print("No Python processes found.") 
 
     def get_next_frontmost_app_pid(self, name):
+        """
+        특정 이름의 앱 다음으로 앞에 있는 앱의 PID를 가져옵니다.
+
+        Args:
+            name: 앱 이름
+
+        Returns:
+            다음 앱의 PID 또는 None
+        """
         window_order = self.get_layer_order()
         for i, (app_name, pid) in enumerate(window_order):
-            if app_name == name:
-                if i + 1 < len(window_order):
-                    return window_order[i + 1][1]  # 다음 인덱스의 PID 반환
-                else:
-                    return None  # 다음 인덱스가 없으면 None 반환
+            if app_name == name and i + 1 < len(window_order):
+                return window_order[i + 1][1]
         return None
+
     def get_window_at_position(self, x, y):
-        options = Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements
-        window_list = Quartz.CGWindowListCopyWindowInfo(options, Quartz.kCGNullWindowID)
+        """
+        특정 좌표에 있는 윈도우 정보를 가져옵니다.
+
+        Args:
+            x: X 좌표
+            y: Y 좌표
+
+        Returns:
+            [(앱 이름, PID)] 튜플의 리스트
+        """
+        window_list = CGWindowListCopyWindowInfo(
+            WindowManager.WINDOW_LIST_OPTIONS,
+            kCGNullWindowID
+        )
+        
         window_bounds_list = []
         for window in window_list:
             app_name = window.get('kCGWindowOwnerName', 'Unknown')
-            if app_name in ['Window Server', '스크린샷', 'screencapture']:
+            if app_name in WindowManager.IGNORED_APPS:
                 continue
-            window_bounds = window.get('kCGWindowBounds')
-            if window_bounds['X'] <= x <= window_bounds['X'] + window_bounds['Width'] and \
-               window_bounds['Y'] <= y <= window_bounds['Y'] + window_bounds['Height']:
+
+            bounds = window.get('kCGWindowBounds')
+            if (bounds['X'] <= x <= bounds['X'] + bounds['Width'] and
+                bounds['Y'] <= y <= bounds['Y'] + bounds['Height']):
                 pid = window.get('kCGWindowOwnerPID', 'Unknown')
                 window_bounds_list.append((app_name, pid))
+                
         return window_bounds_list
-    
+
     def get_topmost_window_at_position(self, x, y):
+        """
+        특정 좌표에서 가장 위에 있는 윈도우 정보를 가져옵니다.
+
+        Args:
+            x: X 좌표
+            y: Y 좌표
+
+        Returns:
+            (앱 이름, PID) 튜플 또는 None
+        """
         windows_at_position = self.get_window_at_position(x, y)
         window_order = self.get_layer_order()
+        
         for app_name, pid in window_order:
             if (app_name, pid) in windows_at_position:
-                if(app_name == 'Python'):
+                if app_name == 'Python':
                     continue
                 return app_name, pid
         return None

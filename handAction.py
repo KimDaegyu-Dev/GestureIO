@@ -1,171 +1,194 @@
+from dataclasses import dataclass
 import pyautogui
 import PyXA
 from ManageProcess import ManageProcess
 import Quartz
 import AppKit
+import numpy as np  # numpy 추가
+
+@dataclass
+class Point:
+    x: float
+    y: float
+    z: float = 0.0
+
+@dataclass
+class WindowInfo:
+    name: str
+    x: float
+    y: float
+    height: float
+    width: float
+
 class HandAction:
-    def get_application_window_info(self, pid):
-        options = Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements
-        window_list = Quartz.CGWindowListCopyWindowInfo(options, Quartz.kCGNullWindowID)
-        # print(window_list)
-        # frontmost_app_pid = AppKit.NSWorkspace.sharedWorkspace().frontmostApplication().processIdentifier()
-        
-        for window in window_list:
-            if window.get('kCGWindowLayer') == 0 and window.get('kCGWindowOwnerPID') == pid:
-                window_bound=window.get('kCGWindowBounds')
-                window_name=window.get('kCGWindowOwnerName')
-                return [window_name, window_bound['X'], window_bound['Y'], window_bound['Height'], window_bound['Width']] 
-        return None
+    Z_THRESHOLD = 0.1
+    CLICK_DISTANCE_THRESHOLD = 0.05
+    MOVEMENT_THRESHOLD = 100
+
     def __init__(self):
-        # 화면 크기 가져오기
         self.screen_width, self.screen_height = pyautogui.size()
         self.previous_gesture = 'unknown'
-        self.z_threshold = 0.1  # z좌표 임계값 설정
-        self.previous_y = None  # 이전 y 좌표 저장
-        self.scroll_direction = None  # 스크롤 방향 저장
-        self.mouse_down_executed = False  # mouseDown 실행 여부
-        self.x = 0 
-        self.y = 0
-        self.mange_process = ManageProcess()
+        self.previous_y = None
+        self.mouse_down_executed = False
+        self.cursor_x = 0
+        self.cursor_y = 0
+        self.manage_process = ManageProcess()
         self.prev_mid_x = None
         self.prev_mid_y = None
-        self.current_position = 0
-        self.current_size = 0
-        self.current_name = 0
+        self.current_position = [0, 0]
         self.prev_process_pid = 0
-    def calculate_distance(self, point1, point2):
-        return ((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2) ** 0.5
-    def print_finger_position(self, index_finger_tip):
-        """
-        검지 손가락의 랜드마크를 받아서 화면의 어느 위치인지 출력하는 메소드
-        """
-        # 랜드마크의 x, y 좌표를 화면 크기에 맞게 변환
-        x = int(index_finger_tip.x * self.screen_width)
-        y = int(index_finger_tip.y * self.screen_height)
-        z = index_finger_tip.z
 
-        # 위치 출력
-        print(f"Index Finger Position: ({x}, {y}, {z})")
-    def get_app_by_pid(self, pid):
-        # NSRunningApplication을 통해 PID로 실행 중인 애플리케이션 가져오기
-        app_ref = AppKit.NSRunningApplication.runningApplicationWithProcessIdentifier_(pid)
+    def get_application_window_info(self, pid):
+        """특정 PID를 가진 애플리케이션 창의 정보를 가져옵니다."""
+        options = Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements
+        window_list = Quartz.CGWindowListCopyWindowInfo(options, Quartz.kCGNullWindowID)
         
+        for window in window_list:
+            if (window.get('kCGWindowLayer') == 0 and 
+                window.get('kCGWindowOwnerPID') == pid):
+                bounds = window.get('kCGWindowBounds')
+                return WindowInfo(
+                    name=window.get('kCGWindowOwnerName'),
+                    x=bounds['X'],
+                    y=bounds['Y'],
+                    height=bounds['Height'],
+                    width=bounds['Width']
+                )
+        return None
+
+    def get_app_by_pid(self, pid):
+        """PID로 애플리케이션 객체를 가져옵니다."""
+        app_ref = AppKit.NSRunningApplication.runningApplicationWithProcessIdentifier_(pid)
         if app_ref:
-            # PyXA를 사용해 PID로 애플리케이션 접근
-            app = PyXA.Application(app_ref.localizedName())
-            return app
-        else:
-            return None
+            return PyXA.Application(app_ref.localizedName())
+        return None
+
+    def calculate_distance(self, point1, point2):
+        """두 점 사이의 유클리드 거리를 계산합니다."""
+        p1 = np.array([point1.x, point1.y])
+        p2 = np.array([point2.x, point2.y])
+        return np.linalg.norm(p1 - p2)
+
     def calculate_midpoint(self, point1, point2):
-        mid_x = (point1.x + point2.x) / 2
-        mid_y = (point1.y + point2.y) / 2
-        return mid_x, mid_y
-    def process_landmarks(self, left_index_finger_tip, left_thumb_tip):
-        current_distance = self.calculate_distance(left_index_finger_tip, left_thumb_tip)
+        """두 점의 중점을 계산합니다."""
+        p1 = np.array([point1.x, point1.y])
+        p2 = np.array([point2.x, point2.y])
+        midpoint = (p1 + p2) / 2
+        return midpoint[0], midpoint[1]
 
-        if current_distance < 0.05: #얼마나 가까워야하는지
-            self.update_window_position(left_index_finger_tip, left_thumb_tip)
+    def process_window_drag(self, index_finger_tip, thumb_tip):
+        """창 드래그 동작을 처리합니다."""
+        current_distance = self.calculate_distance(index_finger_tip, thumb_tip)
+        if current_distance < self.CLICK_DISTANCE_THRESHOLD:
+            self.update_window_position(index_finger_tip, thumb_tip)
 
-    def update_window_position(self, left_index_finger_tip, left_thumb_tip):
-        mid_x, mid_y = self.calculate_midpoint(left_index_finger_tip, left_thumb_tip)
-        screen_width, screen_height = pyautogui.size()
-        new_x = int(mid_x * screen_width)
-        new_y = int(mid_y * screen_height)
-        topmost_window_info = self.mange_process.get_topmost_window_at_position(new_x, new_y)
-        if topmost_window_info:
-            # 창을 제일 앞에 오도록 설정
-            # self.mange_process.bring_window_to_second(topmost_window_info[1])
-            # self.mange_process.bring_window_to_front(self.mange_process.get_python_processes()[0])
-            frontmost_app = self.get_app_by_pid(topmost_window_info[1])
-            if topmost_window_info[1] != self.prev_process_pid:
-                self.prev_mid_x, self.prev_mid_y = None, None
-                self.current_position = self.get_application_window_info(topmost_window_info[1])[1:3]
-                print(self.current_position)
-                # print("Change Process")
-            if self.prev_mid_x is not None and self.prev_mid_y is not None:
-                move_x = new_x - self.prev_mid_x
-                move_y = new_y - self.prev_mid_y
-                if abs(move_x)>100 or abs(move_y)>100:
-                    move_x=0
-                    move_y=0
-                frontmost_window = frontmost_app.windows()[0]
-                if frontmost_window :
-                    # margin_x, margin_y = new_x- self.current_position[0], new_x-self.current_position[1]
-                    # print(margin_x,margin_y)
-                    # print("before change: ", self.current_position, move_x, move_y)
-                    frontmost_window.position = [self.current_position[0] + move_x, self.current_position[1] + move_y]
-                    self.current_position = [self.current_position[0] + move_x, self.current_position[1] + move_y]
-                    # print("after change:", self.current_position, move_x, move_y)
+    def update_window_position(self, index_finger_tip, thumb_tip):
+        """창의 위치를 업데이트합니다."""
+        mid_x, mid_y = self.calculate_midpoint(index_finger_tip, thumb_tip)
+        new_x = int(mid_x * self.screen_width)
+        new_y = int(mid_y * self.screen_height)
+        
+        window_info = self.manage_process.get_topmost_window_at_position(new_x, new_y)
+        if not window_info:
+            return
 
-        self.prev_process_pid = topmost_window_info[1]
+        app_name, pid = window_info
+        if pid != self.prev_process_pid:
+            self._handle_new_window(pid)
+            return
+
+        self._update_window_position(new_x, new_y, pid)
+        self.prev_process_pid = pid
         self.prev_mid_x, self.prev_mid_y = new_x, new_y
-    
+
+    def _handle_new_window(self, pid):
+        """새로운 창을 처리합니다."""
+        self.prev_mid_x, self.prev_mid_y = None, None
+        window_info = self.get_application_window_info(pid)
+        if window_info:
+            self.current_position = [window_info.x, window_info.y]
+
+    def _update_window_position(self, new_x, new_y, pid):
+        """창의 새로운 위치를 적용합니다."""
+        if self.prev_mid_x is None or self.prev_mid_y is None:
+            return
+
+        move_x = new_x - self.prev_mid_x
+        move_y = new_y - self.prev_mid_y
+
+        if abs(move_x) > self.MOVEMENT_THRESHOLD or abs(move_y) > self.MOVEMENT_THRESHOLD:
+            return
+
+        app = self.get_app_by_pid(pid)
+        if app and app.windows():
+            new_position = [
+                self.current_position[0] + move_x,
+                self.current_position[1] + move_y
+            ]
+            print(f"Moving window to {new_position}")
+            app.windows()[0].position = new_position
+            self.current_position = new_position
+
+    def process_mouse_movement(self, index_finger_tip):
+        """마우스 이동을 처리합니다."""
+        self.cursor_x = int(index_finger_tip.x * self.screen_width)
+        self.cursor_y = int(index_finger_tip.y * self.screen_height) - 5
+        pyautogui.moveTo(self.cursor_x, self.cursor_y)
+
+    def process_scroll(self, index_finger_tip, scroll_up=True):
+        """스크롤 동작을 처리합니다."""
+        if self.previous_y is not None:
+            current_y = int(index_finger_tip.y * self.screen_height)
+            delta_y = current_y - self.previous_y
+            if (scroll_up and delta_y > 0) or (not scroll_up and delta_y < 0):
+                pyautogui.scroll(delta_y / 20)
+        self.previous_y = int(index_finger_tip.y * self.screen_height)
+
     def watchGesture(self, hand_landmark, current_gesture, isLeft=True):
         """
-        제스처가 standby에서 point로 바뀌면 index_finger_tip의 위치에 마우스 클릭을 수행하는 메소드
-        """
-        # 검지 손가락의 랜드마크 가져오기
-        index_finger_tip = hand_landmark[8]  # 8번 랜드마크가 검지 손가락 끝
-        thumb_tip = hand_landmark[4]
-        # 제스처가 'point'에서 'point'로 유지되는지 확인
+        손동작을 감지하고 처리합니다.
         
+        Args:
+            hand_landmark: 손의 랜드마크 정보
+            current_gesture: 현재 감지된 제스처
+            isLeft: 왼손 여부
+        """
+        index_finger_tip = hand_landmark[8]
+        thumb_tip = hand_landmark[4]
 
-        # 제스처가 standby에서 point로 바뀌었는지 확인
         if self.previous_gesture == 'okay' and current_gesture == 'okay':
-            self.process_landmarks(index_finger_tip, thumb_tip)
-        if self.previous_gesture == 'point' and current_gesture == 'point':
-            # 랜드마크의 x, y 좌표를 화면 크기에 맞게 변환
-            self.x = int(index_finger_tip.x * self.screen_width)
-            self.y = int(index_finger_tip.y * self.screen_height) - 5
+            self.process_window_drag(index_finger_tip, thumb_tip)
 
-            # 마우스 위치 이동
-            pyautogui.moveTo(self.x, self.y)
-        elif (self.previous_gesture == 'point' and current_gesture == 'four'):
-            # 랜드마크의 x, y 좌표를 화면 크기에 맞게 변환
-            # x = int(index_finger_tip.x * self.screen_width)
-            # y = int(index_finger_tip.y * self.screen_height) - 5
+        elif self.previous_gesture == 'point' and current_gesture == 'point':
+            self.process_mouse_movement(index_finger_tip)
 
-            # 마우스 클릭 수행
-            pyautogui.click(self.x, self.y)
+        elif self.previous_gesture == 'point' and current_gesture == 'four':
+            pyautogui.click(self.cursor_x, self.cursor_y)
+
         if isLeft:
-            
-            # 제스처가 'two'에서 'two'로 유지되는지 확인
-            if self.previous_gesture == 'two' and current_gesture == 'two':
-                # 이전 y 좌표가 설정되어 있는지 확인
-                if self.previous_y is not None:
-                    current_y = int(index_finger_tip.y * self.screen_height)
-                    delta_y = current_y - self.previous_y
-                    if delta_y > 0:
-                        pyautogui.scroll(delta_y / 20)
-                self.previous_y = int(index_finger_tip.y * self.screen_height)
-            if self.previous_gesture == 'three' and current_gesture == 'three':
-                if self.previous_y is not None:
-                    current_y = int(index_finger_tip.y * self.screen_height)
-                    delta_y = current_y - self.previous_y
-                    if delta_y < 0:
-                        pyautogui.scroll(delta_y / 20)
-                self.previous_y = int(index_finger_tip.y * self.screen_height)
+            if current_gesture == 'two' and self.previous_gesture == 'two':
+                self.process_scroll(index_finger_tip, True)
+            elif current_gesture == 'three' and self.previous_gesture == 'three':
+                self.process_scroll(index_finger_tip, False)
         else:
-            if self.previous_gesture == 'two' and current_gesture == 'two':
-                if not self.mouse_down_executed:
-                    pyautogui.mouseDown()
-                    self.mouse_down_executed = True
-                # 랜드마크의 x, y 좌표를 화면 크기에 맞게 변환
-                x = int(index_finger_tip.x * self.screen_width)
-                y = int(index_finger_tip.y * self.screen_height) - 5
+            self._handle_right_hand_gestures(current_gesture, index_finger_tip)
 
-                # 마우스 위치 이동
-                pyautogui.moveTo(x, y)
-            else:
-                self.mouse_down_executed = False
-
-            if self.previous_gesture == 'three' and current_gesture == 'three':
-                pyautogui.mouseUp()
-
-            if self.previous_gesture == 'three' and current_gesture == 'fist':
-                pyautogui.rightClick()
-        # 이전 제스처 상태 업데이트
         self.previous_gesture = current_gesture
+
+    def _handle_right_hand_gestures(self, current_gesture, index_finger_tip):
+        """오른손 제스처를 처리합니다."""
+        if current_gesture == 'two':
+            if not self.mouse_down_executed:
+                pyautogui.mouseDown()
+                self.mouse_down_executed = True
+            self.process_mouse_movement(index_finger_tip)
+        else:
+            self.mouse_down_executed = False
+
+        if current_gesture == 'three':
+            pyautogui.mouseUp()
+        elif self.previous_gesture == 'three' and current_gesture == 'fist':
+            pyautogui.rightClick()
 
 # 예제 사용법
 if __name__ == "__main__":
