@@ -23,6 +23,7 @@ class LandmarkSharing(QWidget):
         self.landmark_visualizer = LandmarkVisualizerWindow()
         self.initUI()
         self.setup_camera_timer()
+        self.landmarks = None  # Add this line to initialize self.landmarks
 
     def initUI(self):
         layout = QVBoxLayout()
@@ -54,13 +55,13 @@ class LandmarkSharing(QWidget):
         if result:
             left_hand, right_hand, connections = result
             # 랜드마크를 딕셔너리 형태로 변환
-            landmarks = self.convert_landmarks_to_dict(left_hand, right_hand)
-            if landmarks:
-                self.landmark_visualizer.update_landmarks(landmarks)
+            self.landmarks = self.convert_landmarks_to_dict(left_hand, right_hand)  # Update self.landmarks
+            if self.landmarks:
+                self.landmark_visualizer.update_landmarks(self.landmarks)
                 if hasattr(self, 'selected_user'):
                     self.sio.emit('landmarks', {
                         'targetUser': self.selected_user,
-                        'landmarks': landmarks
+                        'landmarks': self.landmarks
                     })
 
     def convert_landmarks_to_dict(self, left_hand, right_hand):
