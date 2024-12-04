@@ -45,7 +45,7 @@ GestureIO is an innovative open-source project that enables intuitive computer c
 2. Install required dependencies:
 
    ```bash
-   pip install -r requirements.txt
+   pip install opencv-python pyautogui PyQt5 mediapipe numpy python-socketio
    ```
 
 3. Run the application:
