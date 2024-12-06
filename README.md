@@ -1,8 +1,10 @@
 # GestureIO
 
+[![GestureIO Demo](https://img.youtube.com/vi/P7oylwh6kgQ/0.jpg)](https://youtu.be/P7oylwh6kgQ)
+
 ## Overview
 
-GestureIO is an open-source project that enables intuitive computer control through hand gestures. By utilizing computer vision technology, it allows users to interact with their computer using natural hand movements, making human-computer interaction more accessible and intuitive.
+GestureIO is an open-source project that enables computer control through hand gestures. It utilizes computer vision technology to allow users to interact with computers with natural hand gestures, making human-computer interaction more accessible and intuitive.
 
 ## Features
 
@@ -103,6 +105,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - [MediaPipe](https://mediapipe.dev/) for hand tracking technology
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro) for GUI components
 - [PyAutoGUI](https://pyautogui.readthedocs.io/en/latest/) for mouse and keyboard control
+- [PyXA](https://github.com/amehtadave/PyXA) for macOS application scripting
 
 ---
 
@@ -110,7 +113,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## 개요
 
-GestureIO는 손동작을 통해 직관적인 컴퓨터 제어를 가능하게 하는 혁신적인 오픈소스 프로젝트입니다. 컴퓨터 비전 기술을 활용하여 사용자가 자연스러운 손동작으로 컴퓨터와 상호작용할 수 있게 하여, 인간-컴퓨터 상호작용을 더욱 접근성 있고 직관적으로 만듭니다.
+GestureIO는 손동작을 통해 컴퓨터 제어를 가능하게 하는 오픈소스 프로젝트입니다. 컴퓨터 비전 기술을 활용하여 사용자가 자연스러운 손동작으로 컴퓨터와 상호작용할 수 있게 하여, 인간-컴퓨터 상호작용을 더욱 접근성 있고 직관적으로 만듭니다.
 
 ## 기능
 
@@ -211,3 +214,4 @@ GestureIO는 커뮤니티의 기여를 환영합니다! 기여하고 싶으신 �
 - [MediaPipe](https://mediapipe.dev/)를 통한 손 추적 기술
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro)를 통한 GUI 구성 요소
 - [PyAutoGUI](https://pyautogui.readthedocs.io/en/latest/)를 통한 마우스 및 키보드 제어
+- [PyXA](https://github.com/amehtadave/PyXA) for macOS application scripting
