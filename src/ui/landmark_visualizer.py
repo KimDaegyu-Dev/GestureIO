@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLineEdit, QListWidget
 from PyQt5.QtGui import QPainter, QPen, QColor, QFont
 from PyQt5.QtCore import QRectF, Qt
+import yaml
 
 class LandmarkVisualizerWindow(QWidget):
     def __init__(self):
@@ -11,15 +12,22 @@ class LandmarkVisualizerWindow(QWidget):
         self.received_landmarks = []
         self.winner = None
 
+        # Load settings from YAML file
+        with open('./config/settings.yaml', 'r') as file:
+            settings = yaml.safe_load(file)
+            self.my_pen_color = settings['window']['my_pen_color']
+            self.oponent_pen_color = settings['window']['oponent_pen_color']
+            self.pen_size = settings['window']['pen_size']
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
         # Draw own landmarks (mirrored)
-        self.draw_landmarks(painter, self.landmarks, Qt.green)
+        self.draw_landmarks(painter, self.landmarks, QColor(self.my_pen_color))
 
         # Draw received landmarks
-        self.draw_landmarks(painter, self.received_landmarks, Qt.blue)
+        self.draw_landmarks(painter, self.received_landmarks, QColor(self.oponent_pen_color))
 
         # Draw winner text if applicable
         if self.winner:
@@ -36,7 +44,7 @@ class LandmarkVisualizerWindow(QWidget):
         if not landmarks:
             return
 
-        pen = QPen(color, 2)
+        pen = QPen(color, self.pen_size)
         painter.setPen(pen)
 
         for landmark in landmarks:

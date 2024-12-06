@@ -5,6 +5,7 @@ import cv2
 import mediapipe as mp
 from src.ui.landmark_visualizer import LandmarkVisualizerWindow
 from src.core.hand_tracker import HandTracker
+import yaml
 
 
 class LandmarkSharing(QWidget):
@@ -24,6 +25,10 @@ class LandmarkSharing(QWidget):
         self.initUI()
         self.setup_camera_timer()
         self.landmarks = None  # Add this line to initialize self.landmarks
+
+        with open('./config/settings.yaml', 'r') as file:
+                settings = yaml.safe_load(file)
+                self.server_url = settings['server']['url']
 
     def initUI(self):
         layout = QVBoxLayout()
@@ -107,7 +112,7 @@ class LandmarkSharing(QWidget):
     def connect_to_server(self):
         username = self.username_input.text()
         if username:
-            self.sio.connect('http://3.34.70.33:3000')
+            self.sio.connect(self.server_url)
             self.sio.emit('register', username)
             self.connect_button.setEnabled(False)
             self.username_input.setEnabled(False)

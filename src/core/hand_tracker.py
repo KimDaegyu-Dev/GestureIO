@@ -3,14 +3,21 @@ import mediapipe as mp
 from src.utils.data_classes import Point
 from src.core.gesture_recognizer import GestureRecognizer
 from src.core.hand_action import HandAction
+import yaml
 
 class HandTracker:
     def __init__(self):
+        with open('./config/settings.yaml', 'r') as file:
+            config = yaml.safe_load(file)
+
+        max_num_hands = config['hand_tracker']['max_num_hands']
+        min_detection_confidence = config['hand_tracker']['min_detection_confidence']
+        min_tracking_confidence = config['hand_tracker']['min_tracking_confidence']
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(
-            max_num_hands=1,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.8
+            max_num_hands=max_num_hands,
+            min_detection_confidence=min_detection_confidence,
+            min_tracking_confidence=min_tracking_confidence
         )
         self.gesture_recognizer = GestureRecognizer()
         self.hand_action = HandAction()
