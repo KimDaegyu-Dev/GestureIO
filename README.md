@@ -2,17 +2,17 @@
 
 ## Overview
 
-GestureIO is an innovative open-source project that enables intuitive computer control through hand gestures. By utilizing computer vision technology, it allows users to interact with their computer using natural hand movements, making human-computer interaction more accessible and intuitive.
+GestureIO is an open-source project that enables intuitive computer control through hand gestures. By utilizing computer vision technology, it allows users to interact with their computer using natural hand movements, making human-computer interaction more accessible and intuitive.
 
 ## Features
 
 ### Mouse Control
 
 - Move cursor using index finger
-- Left click with point gesture followed by four fingers
+- Left click with point gesture followed by standby gesture
 - Right click with three fingers followed by fist gesture
-- Drag and drop using two fingers
-- Scroll up/down using two/three fingers
+- Select using right two/three fingers
+- Scroll up/down using left two/three fingers
 
 ### Window Management
 
@@ -24,21 +24,31 @@ GestureIO is an innovative open-source project that enables intuitive computer c
 
 - Real-time hand tracking
 - Support for both left and right hands
-- Multiple gesture patterns:
-  - Point (index finger)
+- Rigth hand gesture patterns:
   - Fist
   - Open hand
-  - Two fingers
-  - Three fingers
+  - One fingers(index finger) : move mouse
+  - Two fingers : strart select
+  - Three fingers : stop select
   - Four fingers
-  - Okay sign
+  - Okay sign : move window
+  - One finger -> Stand by : click
+- Left hand gesture patterns:
+  - Fist
+  - Open hand
+  - One fingers(index finger) : move mouse
+  - Two fingers : scroll up
+  - Three fingers : scroll down
+  - Four fingers
+  - Okay sign : move window
+  - One finger -> Stand by : click
 
 ## Installation
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/GestureIO.git
+   git clone https://github.com/KimDaegyu-Dev/GestureIO.git
    cd GestureIO
    ```
 
@@ -107,10 +117,10 @@ GestureIO는 손동작을 통해 직관적인 컴퓨터 제어를 가능하게 �
 ### 마우스 제어
 
 - 검지 손가락으로 커서 이동
-- 포인트 제스처 후 네 손가락으로 왼쪽 클릭
+- 포인트 제스처 후 대기 제스처로 왼쪽 클릭
 - 세 손가락 후 주먹 제스처로 오른쪽 클릭
-- 두 손가락으로 드래그 앤 드롭
-- 두/세 손가락으로 위/아래 스크롤
+- 오른손 두/세 손가락으로 선택
+- 왼손 두/세 손가락으로 위/아래 스크롤
 
 ### 창 관리
 
@@ -122,21 +132,31 @@ GestureIO는 손동작을 통해 직관적인 컴퓨터 제어를 가능하게 �
 
 - 실시간 손 추적
 - 왼손과 오른손 모두 지원
-- 다양한 제스처 패턴:
-  - 포인트 (검지 손가락)
+- 오른손 제스처 패턴:
   - 주먹
   - 펼친 손
-  - 두 손가락
-  - 세 손가락
+  - Right한 손가락: 마우스 이동
+  - 두 손가락: 선택 시작
+  - 세 손가락: 선택 종료
   - 네 손가락
-  - 오케이 사인
+  - 오케이 사인: 창 이동
+  - 한 손가락 -> 스탠바이: 클릭
+- 왼손 제스처 패턴:
+  - 주먹
+  - 펼친 손
+  - 한 손가락(검지): 마우스 이동
+  - 두 손가락: 위로 스크롤
+  - 세 손가락: 아래로 스크롤
+  - 네 손가락
+  - 오케이 사인: 창 이동
+  - 한 손가락 -> 스탠바이: 클릭
 
 ## 설치 방법
 
 1. 레포지토리 클론:
 
    ```bash
-   git clone https://github.com/yourusername/GestureIO.git
+   git clone https://github.com/KimDaegyu-Dev/GestureIO.git
    cd GestureIO
    ```
 
@@ -188,6 +208,6 @@ GestureIO는 커뮤니티의 기여를 환영합니다! 기여하고 싶으신 �
 
 ## 감사의 글
 
-- [MediaPipe](https://mediapipe.dev/)를 제공해준 손 추적 기술
+- [MediaPipe](https://mediapipe.dev/)를 통한 손 추적 기술
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro)를 통한 GUI 구성 요소
 - [PyAutoGUI](https://pyautogui.readthedocs.io/en/latest/)를 통한 마우스 및 키보드 제어

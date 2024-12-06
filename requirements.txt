@@ -1,0 +1,7 @@
+opencv-python
+pyautogui
+PyQt5
+mediapipe
+numpy
+python-socketio
+pyyaml
