@@ -110,7 +110,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - [MediaPipe](https://ai.google.dev/edge/mediapipe/solutions/guide) for hand tracking technology
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro) for GUI components
 - [PyAutoGUI](https://pypi.org/project/PyAutoGUI/) for mouse and keyboard control
-- [PyXA]([https://github.com/amehtadave/PyXA](https://github.com/SKaplanOfficial/PyXA)) for macOS application scripting
+- [PyXA](https://github.com/SKaplanOfficial/PyXA) for macOS application scripting
 
 ---
 
@@ -217,7 +217,7 @@ GestureIO는 커뮤니티의 기여를 환영합니다! 기여하고 싶으신 �
 
 ## 감사의 글
 
-- [MediaPipe]([https://mediapipe.dev/](https://ai.google.dev/edge/mediapipe/solutions/guide))를 통한 손 추적 기술
+- [MediaPipe](https://ai.google.dev/edge/mediapipe/solutions/guide)를 통한 손 추적 기술
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro)를 통한 GUI 구성 요소
 - [PyAutoGUI](https://pypi.org/project/PyAutoGUI/)를 통한 마우스 및 키보드 제어
-- [PyXA]([https://github.com/amehtadave/PyXA](https://github.com/SKaplanOfficial/PyXA)) for macOS application scripting
+- [PyXA](https://github.com/SKaplanOfficial/PyXA) for macOS application scripting
