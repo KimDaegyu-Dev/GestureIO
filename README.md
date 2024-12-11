@@ -60,7 +60,7 @@ GestureIO is an open-source project that enables computer control through hand g
 2. Install required dependencies:
 
    ```bash
-   pip install opencv-python pyautogui PyQt5 mediapipe numpy python-socketio
+   pip install -r requirements.txt
    ```
    PxPA is a library that only works on Macs
     If your execution environment is Window, you can't move windows, just comment out the PxPA-related code and run it
@@ -107,10 +107,10 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Acknowledgements
 
-- [MediaPipe](https://mediapipe.dev/) for hand tracking technology
+- [MediaPipe](https://ai.google.dev/edge/mediapipe/solutions/guide) for hand tracking technology
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro) for GUI components
-- [PyAutoGUI](https://pyautogui.readthedocs.io/en/latest/) for mouse and keyboard control
-- [PyXA](https://github.com/amehtadave/PyXA) for macOS application scripting
+- [PyAutoGUI](https://pypi.org/project/PyAutoGUI/) for mouse and keyboard control
+- [PyXA]([https://github.com/amehtadave/PyXA](https://github.com/SKaplanOfficial/PyXA)) for macOS application scripting
 
 ---
 
@@ -173,7 +173,8 @@ GestureIO는 손동작을 통해 컴퓨터 제어를 가능하게 하는 오픈�
    ```bash
    pip install -r requirements.txt
    ```
-
+  PxPA는 Mac에서만 작동하는 라이브러리 입니다
+  실행 환경이 Window일 경우 창 이동은 불가능하고 PxPA 관련 코드를 주석 처리하고 실행시키세요
 3. 애플리케이션 실행:
 
    ```bash
@@ -216,7 +217,7 @@ GestureIO는 커뮤니티의 기여를 환영합니다! 기여하고 싶으신 �
 
 ## 감사의 글
 
-- [MediaPipe](https://mediapipe.dev/)를 통한 손 추적 기술
+- [MediaPipe]([https://mediapipe.dev/](https://ai.google.dev/edge/mediapipe/solutions/guide))를 통한 손 추적 기술
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro)를 통한 GUI 구성 요소
-- [PyAutoGUI](https://pyautogui.readthedocs.io/en/latest/)를 통한 마우스 및 키보드 제어
-- [PyXA](https://github.com/amehtadave/PyXA) for macOS application scripting
+- [PyAutoGUI](https://pypi.org/project/PyAutoGUI/)를 통한 마우스 및 키보드 제어
+- [PyXA]([https://github.com/amehtadave/PyXA](https://github.com/SKaplanOfficial/PyXA)) for macOS application scripting
