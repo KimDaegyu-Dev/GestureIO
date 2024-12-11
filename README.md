@@ -62,6 +62,8 @@ GestureIO is an open-source project that enables computer control through hand g
    ```bash
    pip install opencv-python pyautogui PyQt5 mediapipe numpy python-socketio
    ```
+   PxPA is a library that only works on Macs
+    If your execution environment is Window, you can't move windows, just comment out the PxPA-related code and run it
 
 3. Run the application:
 
